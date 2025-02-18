@@ -4,6 +4,7 @@ let captionText = document.getElementById('captionText');
 let responseContainer = document.getElementById('responseContainer');
 let speechText = document.getElementById('speechText');
 let startButton = document.getElementById('startButton');
+let statusContainer = document.getElementById('statusContainer');
 
 // 添加API调用状态标志
 let isProcessing = false;
@@ -64,7 +65,7 @@ function initSpeechRecognition() {
 
             if (event.results[event.results.length - 1].isFinal && !isProcessing) {
                 isProcessing = true;
-                appendResponse('正在思考中...', true);
+                updateStatus('正在思考中...');
 
                 fetch('/process_speech', {
                     method: 'POST',
@@ -78,11 +79,12 @@ function initSpeechRecognition() {
                     .then(response => response.json())
                     .then(data => {
                         appendResponse(data.response);
+                        updateStatus('等待语音输入...');
                         isProcessing = false;
                     })
                     .catch(error => {
                         console.error('API调用错误:', error);
-                        appendResponse('处理失败，请重试', true);
+                        updateStatus('处理失败，请重试');
                         isProcessing = false;
                     });
             }
@@ -105,10 +107,15 @@ function initSpeechRecognition() {
     recognition.start();
 }
 
-// 添加响应历史记录函数
-function appendResponse(text, isStatus = false) {
+// 更新状态显示
+function updateStatus(text) {
+    statusContainer.innerHTML = `<div class="text-center text-muted">${text}</div>`;
+}
+
+// 添加响应消息
+function appendResponse(text) {
     const responseDiv = document.createElement('div');
-    responseDiv.className = isStatus ? 'text-center text-muted' : 'text-center';
+    responseDiv.className = 'text-center';
     responseDiv.textContent = text;
     responseContainer.appendChild(responseDiv);
     responseContainer.scrollTop = responseContainer.scrollHeight;
@@ -125,5 +132,5 @@ startButton.onclick = () => {
     startButton.textContent = microphoneEnabled ? '关闭麦克风' : '开启麦克风';
     startButton.className = microphoneEnabled ? 'btn btn-primary' : 'btn btn-danger';
     speechText.textContent = microphoneEnabled ? '等待语音输入...' : '麦克风已关闭';
-    appendResponse(microphoneEnabled ? '麦克风已开启' : '麦克风已关闭', true);
+    updateStatus(microphoneEnabled ? '等待语音输入...' : '麦克风已关闭');
 }; 
