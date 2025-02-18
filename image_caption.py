@@ -6,13 +6,12 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 # 加载 BLIP 模型
 device = "cuda" if torch.cuda.is_available() else "cpu"
 processor = BlipProcessor.from_pretrained(
-    "../models/blip-image-captioning-large")  # Salesforce/blip-image-captioning-large
-# processor = Blip2Processor.from_pretrained("../models/blip2-opt-2.7b")
+    "./blip-image-captioning-large")  # Salesforce/blip-image-captioning-large
+# processor = Blip2Processor.from_pretrained("./blip2-opt-2.7b")
 
-model = BlipForConditionalGeneration.from_pretrained("../models/blip-image-captioning-large").to(
+model = BlipForConditionalGeneration.from_pretrained("./blip-image-captioning-large").to(
     device)  # Salesforce/blip-image-captioning-large
-
-# model = Blip2ForConditionalGeneration.from_pretrained("../models/blip2-opt-2.7b").to(device)
+# model = Blip2ForConditionalGeneration.from_pretrained("./blip2-opt-2.7b").to(device)
 
 def generate_caption(image_path):
     """输入图片路径，返回图片描述"""

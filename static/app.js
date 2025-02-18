@@ -2,11 +2,13 @@ let video = document.getElementById('videoElement');
 let canvas = document.getElementById('canvasElement');
 let captionText = document.getElementById('captionText');
 let responseContainer = document.getElementById('responseContainer');
-let startButton = document.getElementById('startButton');
-let stopButton = document.getElementById('stopButton');
 let speechText = document.getElementById('speechText');
+let startButton = document.getElementById('startButton');
 
-// 初始化摄像头
+// 添加API调用状态标志
+let isProcessing = false;
+
+// 初始化摄像头和图像捕获
 async function initCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -47,6 +49,7 @@ function startImageCapture() {
 
 // 语音识别相关
 let recognition;
+let microphoneEnabled = true;
 
 function initSpeechRecognition() {
     recognition = new webkitSpeechRecognition();
@@ -55,28 +58,34 @@ function initSpeechRecognition() {
     recognition.lang = 'zh-CN';
 
     recognition.onresult = (event) => {
-        const text = event.results[event.results.length - 1][0].transcript;
-        speechText.textContent = `语音输入: ${text}`;
+        if (microphoneEnabled) {
+            const text = event.results[event.results.length - 1][0].transcript;
+            speechText.textContent = `语音输入: ${text}`;
 
-        // 只在语音识别结果为最终结果时发送到后端
-        if (event.results[event.results.length - 1].isFinal) {
-            fetch('/process_speech', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    speech_text: text
+            if (event.results[event.results.length - 1].isFinal && !isProcessing) {
+                isProcessing = true;
+                appendResponse('正在思考中...', true);
+
+                fetch('/process_speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        speech_text: text
+                    })
                 })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    responseContainer.innerHTML = '';
-                    const responseDiv = document.createElement('div');
-                    responseDiv.className = 'text-center';
-                    responseDiv.textContent = data.response;
-                    responseContainer.appendChild(responseDiv);
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        appendResponse(data.response);
+                        isProcessing = false;
+                    })
+                    .catch(error => {
+                        console.error('API调用错误:', error);
+                        appendResponse('处理失败，请重试', true);
+                        isProcessing = false;
+                    });
+            }
         }
     };
 
@@ -91,23 +100,30 @@ function initSpeechRecognition() {
         recognition.abort();
         recognition.start();
     };
+
+    // 自动开始识别
+    recognition.start();
 }
 
-// 修改开始/停止按钮功能
-startButton.onclick = () => {
-    recognition.start();
-    startButton.disabled = true;
-    stopButton.disabled = false;
-};
+// 添加响应历史记录函数
+function appendResponse(text, isStatus = false) {
+    const responseDiv = document.createElement('div');
+    responseDiv.className = isStatus ? 'text-center text-muted' : 'text-center';
+    responseDiv.textContent = text;
+    responseContainer.appendChild(responseDiv);
+    responseContainer.scrollTop = responseContainer.scrollHeight;
+}
 
-stopButton.onclick = () => {
-    recognition.abort();
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    speechText.textContent = '语音识别已停止';
-};
-
-// 初始化
+// 初始化基本功能
 initCamera();
 startImageCapture();
-initSpeechRecognition(); 
+initSpeechRecognition();
+
+// 设置麦克风按钮
+startButton.onclick = () => {
+    microphoneEnabled = !microphoneEnabled;
+    startButton.textContent = microphoneEnabled ? '关闭麦克风' : '开启麦克风';
+    startButton.className = microphoneEnabled ? 'btn btn-primary' : 'btn btn-danger';
+    speechText.textContent = microphoneEnabled ? '等待语音输入...' : '麦克风已关闭';
+    appendResponse(microphoneEnabled ? '麦克风已开启' : '麦克风已关闭', true);
+}; 
