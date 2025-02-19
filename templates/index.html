@@ -7,39 +7,143 @@
     <title>智能助手</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            background-color: #121212;
+            /* Dark background */
+            color: #e0e0e0;
+            /* Light text color */
+        }
+
+        .container-fluid {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            /* Darker container background */
+        }
+
+        .row {
+            flex: 1;
+            display: flex;
+        }
+
+        .col-md-6 {
+            height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .camera-container,
+        .response-container,
+        .status-container,
+        .speech-text {
+            background-color: #2c2c2c;
+            /* Darker element background */
+            color: #e0e0e0;
+            /* Light text color */
+        }
+
+        .camera-container,
+        .response-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .status-container,
+        .speech-text,
+        .response-container {
+            margin-bottom: 10px;
+        }
+
+        .mt-3 {
+            margin-top: auto;
+        }
+
+        .text-center {
+            width: 100%;
+        }
+
         .camera-container {
             width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .response-container {
             height: 330px;
             overflow-y: auto;
-            border: 1px solid #dee2e6;
+            border: 1px solid #444;
             padding: 15px;
             margin-top: 10px;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            text-align: center;
         }
 
         #videoElement {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            /* Darker shadow */
         }
 
         .speech-text {
             margin-top: 10px;
             padding: 10px;
-            background-color: #f8f9fa;
+            background-color: #2c2c2c;
+            /* Darker background for speech text */
+            color: #e0e0e0;
+            /* Light text color */
             border-radius: 4px;
         }
 
         .status-container {
             height: 50px;
             overflow-y: hidden;
-            border: 1px solid #dee2e6;
+            border: 1px solid #444;
+            /* Darker border */
             padding: 10px;
             margin-top: 20px;
-            background-color: #f8f9fa;
+            background-color: #2c2c2c;
+            /* Darker background for status container */
+            border-radius: 8px;
+        }
+
+        .btn {
+            background-color: #3a3a3a;
+            /* Dark button background */
+            color: #e0e0e0;
+            /* Light button text */
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            /* Primary button color */
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            /* Danger button color */
+        }
+
+        .text-muted {
+            color: #b0b0b0;
+            /* Muted text color */
         }
     </style>
 </head>
@@ -52,18 +156,18 @@
                 <div class="camera-container">
                     <video id="videoElement" autoplay></video>
                     <canvas id="canvasElement" style="display: none;"></canvas>
-                    <div class="mt-3">
-                        <div class="speech-text" id="speechText">等待语音输入...</div>
-                    </div>
                 </div>
             </div>
 
             <!-- 右侧响应区域 -->
-            <div class="col-md-6">
-                <div class="status-container" id="statusContainer">
-                    <div class="text-center text-muted">等待系统响应...</div>
-                </div>
-                <div class="response-container" id="responseContainer">
+            <div class="col-md-6 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="status-container" id="statusContainer">
+                        <div class="text-center text-muted">等待系统响应...</div>
+                    </div>
+                    <div class="speech-text" id="speechText">等待语音输入...</div>
+                    <div class="response-container" id="responseContainer">
+                    </div>
                 </div>
                 <div class="mt-3 text-center">
                     <button id="startButton" class="btn btn-primary">关闭麦克风</button>
