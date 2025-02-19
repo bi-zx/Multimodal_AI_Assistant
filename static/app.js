@@ -45,7 +45,7 @@ function startImageCapture() {
             };
             reader.readAsDataURL(blob);
         }, 'image/jpeg');
-    }, 500);
+    }, 1000);
 }
 
 // 语音识别相关
@@ -61,10 +61,10 @@ function initSpeechRecognition() {
 
     recognition.onresult = (event) => {
         if (microphoneEnabled) {
-            const text = event.results[event.results.length - 1][0].transcript;
+            const text = event.results[event.results.length - 1][0].transcript.trim();
             speechText.textContent = `语音输入: ${text}`;
 
-            if (event.results[event.results.length - 1].isFinal && !isProcessing) {
+            if (text && event.results[event.results.length - 1].isFinal && !isProcessing) {
                 isProcessing = true;
                 updateStatus('正在思考中...');
 
@@ -93,15 +93,17 @@ function initSpeechRecognition() {
     };
 
     recognition.onend = () => {
-        // 自动重新开始识别
-        recognition.start();
+        if (microphoneEnabled) {
+            recognition.start();
+        }
     };
 
     recognition.onerror = (event) => {
         console.error('语音识别错误:', event.error);
-        // 错误发生时重新启动识别
-        recognition.abort();
-        recognition.start();
+        if (microphoneEnabled) {
+            recognition.abort();
+            recognition.start();
+        }
     };
 
     // 自动开始识别
@@ -113,13 +115,34 @@ function updateStatus(text) {
     statusContainer.innerHTML = `<div class="text-center text-muted">${text}</div>`;
 }
 
+let currentUtterance = null;
+
 function speakText(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-CN'; // 设置语言为中文
-    window.speechSynthesis.speak(utterance);
+    // Cancel any ongoing speech
+    if (currentUtterance) {
+        window.speechSynthesis.cancel();
+    }
+
+    // Create a new utterance for the new text
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.lang = 'zh-CN'; // Set language to Chinese
+
+    // Set pitch and rate for more natural sound
+    currentUtterance.pitch = 1.0; // Adjust pitch (0.0 to 2.0)
+    currentUtterance.rate = 1.5;  // Increase rate for faster speech
+
+    // Select a more human-like voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => voice.name.includes('Natural') || voice.name.includes('Human'));
+    if (preferredVoice) {
+        currentUtterance.voice = preferredVoice;
+    }
+
+    // Speak the new utterance
+    window.speechSynthesis.speak(currentUtterance);
 }
 
-// 修改 appendResponse 函数以在添加响应时朗读文本
+// Modify appendResponse function to read the text aloud
 function appendResponse(text) {
     const responseDiv = document.createElement('div');
     responseDiv.className = 'text-center';
@@ -143,4 +166,10 @@ startButton.onclick = () => {
     startButton.className = microphoneEnabled ? 'btn btn-primary' : 'btn btn-danger';
     speechText.textContent = microphoneEnabled ? '等待语音输入...' : '麦克风已关闭';
     updateStatus(microphoneEnabled ? '等待语音输入...' : '麦克风已关闭');
+
+    if (microphoneEnabled) {
+        recognition.start();
+    } else {
+        recognition.stop();
+    }
 }; 

@@ -32,7 +32,7 @@ def save_image():
 
 @app.route('/process_speech', methods=['POST'])
 def process_speech():
-    speech_text = request.json['speech_text']
+    speech_text = "请使用中文回复。" + request.json['speech_text']
     response_text = process_image_and_question(IMAGE_PATH, speech_text) if os.path.exists(IMAGE_PATH) else ""
     return jsonify({'response': response_text})
 

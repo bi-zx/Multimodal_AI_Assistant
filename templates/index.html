@@ -72,9 +72,18 @@
         </div>
     </div>
 
+    <div id="captionText"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/voice-activity-detection@0.0.5/voice-activity-detection.js"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Your initialization code here
+            let captionText = document.getElementById('captionText');
+            // Other initialization code...
+        });
+    </script>
 </body>
 
 </html>
