@@ -1,39 +1,41 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 import os
-from image_caption import generate_caption
-from text_processor import combine_results
-import time
+from model import process_image_and_question
+import base64
+from PIL import Image
+import io
 
 app = Flask(__name__)
 
-# 临时文件目录
-TEMP_FOLDER = "temp/"
-os.makedirs(TEMP_FOLDER, exist_ok=True)
-app.config["TEMP_FOLDER"] = TEMP_FOLDER
+# 全局变量存储固定的图片路径
+IMAGE_PATH = 'static/captures/current.jpg'
 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route('/')
 def index():
-    if request.method == "POST":
-        if 'speech' in request.json:
-            # 处理语音识别结果
-            speech_text = request.json['speech']
-            return jsonify({"speech_text": speech_text})
-            
-        if "file" in request.files:
-            file = request.files["file"]
-            
-            # 使用时间戳保存临时文件
-            timestamp = str(int(time.time()))
-            image_path = os.path.join(app.config["TEMP_FOLDER"], f"capture_{timestamp}.jpg")
-            file.save(image_path)
+    return render_template('index.html')
 
-            # 生成描述并删除临时文件
-            caption = generate_caption(image_path)
-            os.remove(image_path)
-            
-            return jsonify({"caption": caption})
 
-    return render_template("index.html")
+@app.route('/save_image', methods=['POST'])
+def save_image():
+    # 接收base64图像数据
+    image_data = request.json['image'].split(',')[1]
+    image_bytes = base64.b64decode(image_data)
 
-if __name__ == "__main__":
+    # 保存图片，始终覆盖同一个文件
+    img = Image.open(io.BytesIO(image_bytes))
+    os.makedirs('static/captures', exist_ok=True)
+    img.save(IMAGE_PATH)
+
+    return jsonify({})
+
+
+@app.route('/process_speech', methods=['POST'])
+def process_speech():
+    speech_text = request.json['speech_text']
+    response_text = process_image_and_question(IMAGE_PATH, speech_text) if os.path.exists(IMAGE_PATH) else ""
+    return jsonify({'response': response_text})
+
+
+if __name__ == '__main__':
     app.run(debug=True)

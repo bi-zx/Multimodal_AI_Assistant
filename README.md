@@ -11,45 +11,31 @@ A real-time voice chat demo featuring speech-to-text, AI conversation, and text-
 - 📊 Real-time latency monitoring and logging
 - 🎯 WebSocket-based communication
 
-## Prerequisites
-
-- Node.js
-- npm or yarn
-- Modern web browser with WebAudio API support
-
 ## Project Structure
 
-```
-/backend
-- server.py: Main WebSocket server handling audio streaming and AI interactions
-- config.py: Configuration settings for APIs and server parameters
-```
+frontend: flask
 
-```
-/frontend
-- pages/: Next.js pages
-  - index.tsx: Main application interface
-- components/: Reusable UI components
-- public/: Static assets
-  - audioWorklet.js: Audio processing and VAD implementation
-- next.config.js: Next.js configuration
-- tailwind.config.js: Tailwind CSS settings
-- package.json: Frontend dependencies and scripts
-```
+backend: janus
 
 ## Installation
 
 1. Clone the repository
-2. Install backend models: `cd backend && git clone https://huggingface.co/Salesforce/blip-image-captioning-base`
-3. Install frontend dependencies: `cd frontend && npm install`
-4. Configure MODEL_PATH and API keys in backend/config.py
+
+2. Install the model: `git clone https://huggingface.co/deepseek-ai/Janus-Pro-1B`
+
+3. On the basis of `Python >= 3.8` environment which `torch.cuda.is_available()==True`, install the necessary dependencies by running the following command:
+
+   ```bash
+   pip install -r ./requirements.txt
+   ```
+
+   
 
 ## Usage
 
-1. Start the backend server: `cd backend && python server.py`
-2. Start the frontend development server: `cd frontend && npm run dev`
-3. Open http://localhost:3000 in your browser
-4. Click "Start Recording" to begin a conversation
+1. Start the backend server: ` python app.py`
+3. Open http://127.0.0.1:5000/ in your browser
+4. Open your camera and begin a conversation!
 
 ## License
 
